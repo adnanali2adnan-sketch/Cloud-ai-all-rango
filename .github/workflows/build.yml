@@ -14,27 +14,31 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Extract ZIP
-      run: unzip RangoCompanion_UPLOAD.zip -d extracted/ && cp -r extracted/* .
+      run: |
+        unzip RangoCompanion_UPLOAD.zip -d extracted/
+        cp -r extracted/* .
 
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
+        cache: gradle
 
     - name: Download Gradle Wrapper JAR
       run: |
         mkdir -p gradle/wrapper
-        curl -L "https://github.com/gradle/gradle/raw/v8.2.0/gradle/wrapper/gradle-wrapper.jar" \
+        curl -L "https://github.com/gradle/gradle/raw/v8.4.0/gradle/wrapper/gradle-wrapper.jar" \
           -o gradle/wrapper/gradle-wrapper.jar
 
     - name: Make gradlew executable
       run: chmod +x gradlew
 
     - name: Build Debug APK
-      run: ./gradlew assembleDebug --no-daemon
+      run: ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tail -80
 
     - name: Upload APK
+      if: success()
       uses: actions/upload-artifact@v4
       with:
         name: RangoCompanion-APK
